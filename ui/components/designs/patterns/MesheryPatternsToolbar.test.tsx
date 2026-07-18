@@ -9,7 +9,6 @@ const baseProps = {
   isSearchExpanded: false,
   setIsSearchExpanded: vi.fn(),
   selectedPattern: { show: false },
-  patterns: [],
   viewType: 'table',
   setViewType: vi.fn(),
   disableCreateImportDesignButton: false,
@@ -18,8 +17,16 @@ const baseProps = {
   router: { push: vi.fn() },
   handleUploadImport: vi.fn(),
   setSearch: vi.fn(),
-  filter: {},
-  selectedFilters: {},
+  filter: {
+    visibility: {
+      name: 'Visibility',
+      options: [
+        { label: 'Public', value: 'public' },
+        { label: 'Private', value: 'private' },
+      ],
+    },
+  },
+  selectedFilters: { visibility: 'All' },
   setSelectedFilters: vi.fn(),
   handleApplyFilter: vi.fn(),
   columns: [],
@@ -53,19 +60,24 @@ describe('MesheryPatternsToolbar', () => {
     // is silently dropped. Its icon button also has no title/aria-label reaching
     // the DOM at rest (MUI's Tooltip only exposes the label on hover/focus), so
     // it isn't reachable by getByTitle/getByRole(name:) either — only by a raw
-    // container query. This predates this migration: the original ToolWrapper-
-    // based toolbar passed the exact same props to the exact same component.
-    // Flagging as a pre-existing a11y/testability gap in sistent, not a regression.
+    // container query against its (now-unique) id. This predates this migration:
+    // the original ToolWrapper-based toolbar passed the same data-testid prop to
+    // the same component. Flagging as a pre-existing a11y/testability gap in
+    // sistent, not a regression.
     const { container } = renderToolbar();
-    const columnVisibilityWrapper = container.querySelector('#ref');
+    const columnVisibilityWrapper = container.querySelector('#designs-column-visibility-ref');
     expect(columnVisibilityWrapper).toBeInTheDocument();
     expect(columnVisibilityWrapper?.querySelector('button')).toBeInTheDocument();
     expect(screen.queryByTestId('meshery-patterns-column-visibility-control')).toBeNull();
   });
 
-  it('hides create/import buttons and column-visibility control in grid view', () => {
+  it('hides the column-visibility control in grid view', () => {
+    // Create/Import buttons are NOT gated by viewType (only by
+    // selectedPattern.show / disableCreateImportDesignButton), so this test
+    // only covers the column-visibility control, which is table-view-only.
     renderToolbar({ viewType: 'grid' });
     expect(screen.queryByTestId('meshery-patterns-column-visibility-control')).toBeNull();
+    expect(document.querySelector('#designs-column-visibility-ref')).toBeNull();
   });
 
   it('hides the actions row on narrow viewports while search is expanded', () => {

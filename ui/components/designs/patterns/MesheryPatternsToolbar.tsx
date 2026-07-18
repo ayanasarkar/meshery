@@ -28,7 +28,6 @@ function MesheryPatternsToolbar({
   isSearchExpanded,
   setIsSearchExpanded,
   selectedPattern,
-  patterns,
   viewType,
   setViewType,
   disableCreateImportDesignButton,
@@ -49,71 +48,50 @@ function MesheryPatternsToolbar({
   // bar is expanded so the search bar can take the full width.
   const hideActionsRow = width < 600 && isSearchExpanded;
 
-  const primaryActions = hideActionsRow ? null : (
-    <>
-      {!selectedPattern.show && (patterns.length >= 0 || viewType === 'table') && (
-        <div>
-          {disableCreateImportDesignButton ? null : (
-            <div style={{ display: 'flex', order: '1' }}>
-              <TooltipButton
-                title="Create Design"
-                data-testid="meshery-patterns-create-design-btn"
-                aria-label="Add Pattern"
-                variant="contained"
-                color="primary"
-                size="large"
-                // @ts-ignore
-                onClick={() => router.push('designs/configurator')}
-                style={{ display: 'flex', marginRight: '2rem' }}
-                disabled={
-                  !CAN(
-                    Keys.CatalogManagementCreateNewDesign.id,
-                    Keys.CatalogManagementCreateNewDesign.function,
-                  )
-                }
-              >
-                <AddIconStyled />
-                <BtnText> Create Design </BtnText>
-              </TooltipButton>
-              <TooltipButton
-                title="Import Design"
-                data-testid="meshery-patterns-import-design-btn"
-                aria-label="Add Pattern"
-                variant="contained"
-                color="primary"
-                size="large"
-                // @ts-ignore
-                onClick={handleUploadImport}
-                style={{ display: 'flex', marginRight: '2rem', marginLeft: '-0.6rem' }}
-                disabled={
-                  !CAN(
-                    Keys.CatalogManagementImportDesign.id,
-                    Keys.CatalogManagementImportDesign.function,
-                  )
-                }
-              >
-                <AddIconStyled>
-                  <PublishIcon />
-                </AddIconStyled>
-                <BtnText> Import Design </BtnText>
-              </TooltipButton>
-            </div>
-          )}
-        </div>
-      )}
-      {!selectedPattern.show && (
-        <div style={{ display: 'flex' }}>
-          {/* <StyledCatalogFilter>
-          <CatalogFilter
-            catalogVisibility={catalogVisibility}
-            handleCatalogVisibility={handleCatalogVisibility}
-            classes={classes}
-          />
-          </StyledCatalogFilter>*/}
-        </div>
-      )}
-    </>
-  );
+  const primaryActions =
+    hideActionsRow || selectedPattern.show || disableCreateImportDesignButton ? null : (
+      <div style={{ display: 'flex', order: '1' }}>
+        <TooltipButton
+          title="Create Design"
+          data-testid="meshery-patterns-create-design-btn"
+          aria-label="Create Design"
+          variant="contained"
+          color="primary"
+          size="large"
+          // @ts-expect-error - TooltipButton's onClick typing doesn't yet match router.push's signature
+          onClick={() => router.push('designs/configurator')}
+          style={{ display: 'flex', marginRight: '2rem' }}
+          disabled={
+            !CAN(
+              Keys.CatalogManagementCreateNewDesign.id,
+              Keys.CatalogManagementCreateNewDesign.function,
+            )
+          }
+        >
+          <AddIconStyled />
+          <BtnText> Create Design </BtnText>
+        </TooltipButton>
+        <TooltipButton
+          title="Import Design"
+          data-testid="meshery-patterns-import-design-btn"
+          aria-label="Import Design"
+          variant="contained"
+          color="primary"
+          size="large"
+          // @ts-expect-error - TooltipButton's onClick typing doesn't yet match handleUploadImport's signature
+          onClick={handleUploadImport}
+          style={{ display: 'flex', marginRight: '2rem', marginLeft: '-0.6rem' }}
+          disabled={
+            !CAN(Keys.CatalogManagementImportDesign.id, Keys.CatalogManagementImportDesign.function)
+          }
+        >
+          <AddIconStyled>
+            <PublishIcon />
+          </AddIconStyled>
+          <BtnText> Import Design </BtnText>
+        </TooltipButton>
+      </div>
+    );
 
   return (
     <DataTableToolbar
@@ -132,7 +110,7 @@ function MesheryPatternsToolbar({
       filter={
         disableUniversalFilter ? null : (
           <UniversalFilter
-            id="ref"
+            id="designs-universal-filter-ref"
             filters={filter}
             selectedFilters={selectedFilters}
             setSelectedFilters={setSelectedFilters}
@@ -145,7 +123,7 @@ function MesheryPatternsToolbar({
         viewType === 'table' ? (
           <CustomColumnVisibilityControl
             data-testid="meshery-patterns-column-visibility-control"
-            id="ref"
+            id="designs-column-visibility-ref"
             columns={columns}
             customToolsProps={{ columnVisibility, setColumnVisibility }}
           />
